@@ -13,9 +13,11 @@ var { ObjectID } = require("mongodb");
 
 //heroku addons:create mongolab:sandbox
 //heroku config
-mongoose.connect(
-  process.env.MONGODB_URI || "mongodb://localhost:27017/TodoApp"
-);
+mongoose.connect(process.env.MONGODB_URI, {
+  useFindAndModify: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 module.exports = {
   mongoose,

@@ -1,13 +1,7 @@
 // ./mongod --dbpath ~/mongo-data/
 // node server/server.js or npm start
 
-var env = process.env.NODE_ENV || "development"; //env(production, test, development) is used to link different databases
-if (env === "development") {
-  process.env.PORT = 3000;
-} else if (env === "test") {
-  process.env.PORT = 3000;
-}
-
+require("./config/config");
 const express = require("express");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
