@@ -1,14 +1,23 @@
 // ./mongod --dbpath ~/mongo-data/
+// node server/server.js or npm start
 
-var express = require("express");
-var bodyParser = require("body-parser");
+var env = process.env.NODE_ENV || "development"; //env(production, test, development) is used to link different databases
+if (env === "development") {
+  process.env.PORT = 3000;
+} else if (env === "test") {
+  process.env.PORT = 3000;
+}
+
+const express = require("express");
+const bodyParser = require("body-parser");
+const _ = require("lodash");
 
 var { mongoose, ObjectID } = require("./db/mongoose");
 var { Todo } = require("./models/todo");
 var { User } = require("./models/user");
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 //By using this middleware, we are now able to send JASON to our express application
 app.use(bodyParser.json());
@@ -54,7 +63,50 @@ app.get("/todos/:id", (req, res) => {
       }
       res.send({ todo });
     })
-    .catch((e) => res.send(404));
+    .catch((e) => res.status(404).send());
+});
+
+app.delete("/todos/:id", (req, res) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send("Invalid id");
+  }
+  Todo.findByIdAndRemove(id)
+    .then((todo) => {
+      if (!todo) return res.status(404).send();
+      res.send({ todo });
+    })
+    .catch((e) => res.status(400).send());
+});
+
+app.patch("/todos/:id", (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ["text", "completed"]); //body is a copy from req.body with two properties are the same as req.body
+  //console.log(body);
+  if (!ObjectID.isValid(id)) res.status(404).send("Invalid ID");
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findOneAndUpdate(
+    {
+      _id: id,
+    },
+    {
+      $set: body,
+    },
+    {
+      new: true,
+    }
+  )
+    .then((todo) => {
+      if (!todo) res.status(404).send();
+      res.send({ todo });
+    })
+    .catch((e) => res.status(400).send());
 });
 
 app.listen(port, () => {
