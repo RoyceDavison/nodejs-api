@@ -1,0 +1,25 @@
+{
+  "name": "todos-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start":"node server/server.js",
+    "test": "mocha server/**/*.test.js",
+    "test-watch": "nodemon --exec 'npm test'"
+  },
+  "engines":{
+    "node":"10.15.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^3.5.7",
+    "mongoose": "^5.9.15"
+  },
+  "devDependencies": {
+    "expect": "^26.0.1",
+    "mocha": "^7.2.0",
+    "supertest": "^4.0.2"
+  }
+}
