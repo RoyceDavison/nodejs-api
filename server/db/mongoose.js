@@ -7,6 +7,10 @@ mongoose.set("useUnifiedTopology", true);
 
 mongoose.connect("mongodb://localhost:27017/TodoApp");
 
+//heroku addons:create mongolab:sandbox
+//heroku config
+// mongoose.connect(MONGODB_URI || "mongodb://localhost:27017/TodoApp");
+
 module.exports = {
   mongoose,
   ObjectID,
