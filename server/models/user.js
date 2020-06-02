@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
+const bcrypt = require("bcryptjs");
 
 //Schema allow us to customize function
 var UserSchema = new mongoose.Schema({
@@ -59,6 +60,42 @@ UserSchema.methods.generateAuthToken = function () {
     return token;
   });
 };
+
+//model method, not instance method, so you can call it by className
+UserSchema.statics.findByToken = function (token) {
+  var User = this;
+  var decoded;
+  try {
+    decoded = jwt.verify(token, "abc123");
+  } catch (e) {
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // });
+    return Promise.reject();
+  }
+
+  return User.findOne({
+    _id: decoded._id,
+    //to query a nested document
+    "tokens.token": token,
+    "tokens.access": "auth",
+  });
+};
+
+//middleware which is used to store the hashed password
+UserSchema.pre("save", function (next) {
+  var user = this;
+  if (user.isModified("password")) {
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  } else {
+    next();
+  }
+});
 
 var User = mongoose.model("User", UserSchema);
 

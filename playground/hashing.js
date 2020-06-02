@@ -36,3 +36,23 @@ console.log(decoded);
 // } else {
 //   console.log("Bad");
 // }
+
+/**
+ *  Hashing Password
+ *
+ */
+const bcrypt = require("bcryptjs");
+var password = "123abc!";
+
+bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.hash(password, salt, (err, hash) => {
+    console.log(hash);
+  });
+});
+
+var hashPassword =
+  "$2a$10$8wloTOFcXLuzvnND25bKpeCUj5MHKvSO/0HzGnOpqijdoOY7GJ2W6";
+
+bcrypt.compare(password, hashPassword, (err, res) => {
+  console.log(res);
+});
