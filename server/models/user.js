@@ -16,7 +16,8 @@ var UserSchema = new mongoose.Schema({
       validator: (value) => {
         return validator.isEmail(value);
       },
-      message: `{VALUE} is not valid email.`,
+      //message: `{VALUE} is not valid email.`,
+      message: `It is not valid email.`,
     },
   },
   password: {
@@ -61,6 +62,20 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+UserSchema.methods.removeToken = function (token) {
+  //remove an item from the array that matches the criteria
+  var user = this;
+
+  return user.update({
+    $pull: {
+      //In here, we will remove the object in the tokens array
+      tokens: {
+        token: token,
+      },
+    },
+  });
+};
+
 //model method, not instance method, so you can call it by className
 UserSchema.statics.findByToken = function (token) {
   var User = this;
@@ -79,6 +94,19 @@ UserSchema.statics.findByToken = function (token) {
     //to query a nested document
     "tokens.token": token,
     "tokens.access": "auth",
+  });
+};
+
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+  return User.findOne({ email }).then((user) => {
+    if (!user) return Promise.reject();
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, function (err, res) {
+        if (res) resolve(user);
+        else reject();
+      });
+    });
   });
 };
 

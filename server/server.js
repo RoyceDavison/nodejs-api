@@ -1,6 +1,7 @@
 // ./mongod --dbpath ~/mongo-data/
 // node server/server.js or npm start
-
+//How to resolve SocketException: Address already in use MongoDB???
+//https://medium.com/@balasubramanim/how-to-resolve-socketexception-address-already-in-use-mongodb-75fa8ea4a2a6
 require("./config/config");
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -118,9 +119,33 @@ app.post("/users", (req, res) => {
     .catch((e) => res.send(400).send(e));
 });
 
+app.delete("/users/me/token", authenticate, (req, res) => {
+  req.user.removeToken(req.token).then(
+    () => {
+      res.status(200).send();
+    },
+    (err) => {
+      res.status(400).send(err);
+    }
+  );
+});
+
 app.get("/users/me", authenticate, (req, res) => {
   //console.log(res);
   res.send(req.user);
+});
+
+app.post("/users/login", (req, res) => {
+  var body = _.pick(req.body, ["email", "password"]);
+  User.findByCredentials(body.email, body.password)
+    .then((user) => {
+      return user.generateAuthToken().then((token) => {
+        res.header("x-auth", token).send(user);
+      });
+    })
+    .catch((e) => {
+      res.status(400).send("Fail to login.");
+    });
 });
 
 app.listen(port, () => {
